@@ -6,18 +6,20 @@
     <el-tag style="height: 30px;margin-left: 20px" type="danger">禁词</el-tag>
     <el-input placeholder="必须禁止的关键词" v-model="this.$global.bannedWord[0]" :disabled="true"></el-input>
   </div>
-  <div  style="margin-top: 20px;width: 40%;display: flex" >
+  <div  style="margin-top: 20px;width: 70%;display: flex" >
     <el-tag style="height: 30px" type="success">价格区间</el-tag>
-    <el-input placeholder="low" v-model="lowPrice"></el-input>
+    <el-input placeholder="low" v-model="this.lowPrice"></el-input>
     <el-text style="margin-left: 20px;margin-right: 20px">-</el-text>
-    <el-input placeholder="high" v-model="highPrice" ></el-input>
+    <el-input placeholder="high" v-model="this.highPrice" ></el-input>
     <el-button type="danger" style="margin-left: 20px" @click="save">保存</el-button>
     <el-button type="warning" style="margin-left: 20px" @click="filterUnknown">过滤未认证</el-button>
     <el-button type="success" style="margin-left: 20px" @click="init">初始化</el-button>
   </div>
   <div class="result" style="margin-top: 20px" v-loading="this.loadingStatus">
     <el-table
+        ref="table"
         :data="tableData"
+        :row-style="rowStyle"
         :default-sort="{ prop: 'pubTime,level', order: 'descending' }"
     >
       <el-table-column label="ID" prop="id" width="120"></el-table-column>
@@ -56,7 +58,7 @@
 </template>
 <script>
 import QRCode from 'qrcode'
-import {getData} from '@/utils/api'
+import {getData, setItemStatus} from '@/utils/api'
 
 export default {
   name: "GoodsFilter",
@@ -75,11 +77,13 @@ export default {
   methods:{
     //添加收藏
     handleFavorites(index,row){
-      console.log(index, row)
+      this.setStatus(row.id,1);
+      row.status = 1;
     },
     //拉黑该商品以及发布者
     handleBanned(index,row){
-      console.log(index, row)
+      this.setStatus(row.id,2);
+      row.status = 2;
     },
     //生成二维码
     async generateQRCode2(index,row){
@@ -112,6 +116,12 @@ export default {
       this.qrCode = ''
     },
 
+    save(){
+      this.tableData = [];
+      this.existData = [];
+      this.getData();
+    },
+    // 异步获取数据
     async getData(){
       await getData(this.lowPrice,this.highPrice,this.isFilterUnknown).then(res=>{
         res.forEach(x =>{
@@ -131,29 +141,48 @@ export default {
         })
       })
     },
-
     //保存筛选条件
     filterUnknown(){
       this.isFilterUnknown = true
+      this.tableData = [];
+      this.existData = [];
+      this.getData();
     },
+    //初始化筛选条件
     init(){
       this.lowPrice = 0;
       this.highPrice = 99999;
       this.isFilterUnknown = false
+      this.tableData = [];
+      this.existData = [];
+      this.getData();
     },
+    //按照商品状态设置背景色
+    rowStyle(row){
+      if (row.row.status ===  1) {
+        return { color:'green' }
+      } else if (row.row.status === 2) {
+        return {color:'red' }
+      }else {
+        return { background: 'white' }
+      }
+    },
+    //设置状态
+    setStatus(id,status){
+      setItemStatus(id,status);
+    }
   },
   mounted() {
     if(this.firstOpen){
       this.getData();
       this.firstOpen = false;
-    }else{
-      //设置定时器 每5秒刷新
-      setInterval(() => {
-        this.getData()
-      }, 5000);
     }
-
+    //设置定时器 每5秒刷新
+    setInterval(() => {
+      this.getData();
+    }, 5000);
   },
+
 }
 </script>
 
