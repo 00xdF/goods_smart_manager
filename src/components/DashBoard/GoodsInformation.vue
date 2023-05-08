@@ -56,7 +56,15 @@
     </el-row>
     <el-row style="width: 100%;margin-top: 20px">
       <el-card class="mt-2" v-loading="loading" style="width: 88%" >
-        <div>数据趋势</div>
+        <div>
+          <span style="color:red;font-size: 20px">{{this.$global.allowedWord[0]}}</span>
+          <span style="color:gray;margin-left: 10px" >近{{this.day}}天</span>
+          <span style="color:gray;">平均价格走势</span>
+          <el-button type="success" style="margin-left: 10px" @click="day = 7;this.setChartData();">近七天</el-button>
+          <el-button type="success" style="margin-left: 10px" @click="day = 15;this.setChartData();">近半月</el-button>
+          <el-button type="success" style="margin-left: 10px" @click="day = 30;this.setChartData();">近个月</el-button>
+          <el-button type="success" style="margin-left: 10px" @click="day = 180;this.setChartData();">近半年</el-button>
+        </div>
         <div ref="chart" style="height: 300px;width: 100%"></div>
       </el-card>
 
@@ -68,7 +76,7 @@
 
 <script>
 import * as echarts from 'echarts';
-import {getInformation} from "@/utils/api";
+import {getChartData, getInformation} from "@/utils/api";
 export default {
   name: "GoodsInformation",
   data(){
@@ -79,18 +87,25 @@ export default {
         myFavorite:0,
         blackCount:0
       },
-      goodsData: [
-        { id: 1, name: '趋势1', price: 100 },
-        { id: 2, name: '趋势2', price: 200 },
-        { id: 3, name: '趋势3', price: 300 },
-        { id: 4, name: '趋势4', price: 400 }
-      ],
-      loadingStatus: true
+      goodsData:{
+        x:[],
+        y:[]
+      },
+      loadingStatus: true,
+      day:30
     }
   },
   methods:{
     setterLoading(status){
       this.loadingStatus = status;
+    },
+    setChartData(){
+      const chart = echarts.init(this.$refs.chart);
+      getChartData(this.day).then(x=>{
+        this.goodsData.x = x.x;
+        this.goodsData.y = x.y;
+        chart.setOption(this.goodsChartOption)
+      })
     }
   },
   computed:{
@@ -98,17 +113,20 @@ export default {
       const option = {
         xAxis: {
           type: 'category',
-          data: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+          boundaryGap:false,
+          data: this.goodsData.x,
+          axisLabel: {
+            interval: 0, // 每个标签都显示
+          },
         },
         yAxis: {
           type: 'value'
         },
         series: [{
           type: 'line',
-          data: [30, 40, 10, 50, 20, 70, 30, 80, 40, 90]
+          data: this.goodsData.y
         }]
       };
-      console.log(option)
       this.setterLoading(false)
       return option
     },
@@ -117,14 +135,14 @@ export default {
     }
   },
   mounted() {
-    const chart = echarts.init(this.$refs.chart);
-    chart.setOption(this.goodsChartOption)
+    this.setChartData();
     getInformation().then(x=>{
       this.goods.count = x.count;
       this.goods.newAdd = x.todayNewAdd;
       this.goods.myFavorite = x.favorite;
       this.goods.blackCount = x.black;
     });
+
   }
 }
 </script>

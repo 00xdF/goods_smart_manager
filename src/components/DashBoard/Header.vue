@@ -30,7 +30,7 @@
 
 <script>
 import { ElButton, ElDialog } from 'element-plus'
-import {modifySearchKey} from "@/utils/api";
+import {getSearchKey, modifySearchKey} from "@/utils/api";
 export default {
   name: 'HeaderPage',
   data(){
@@ -46,7 +46,12 @@ export default {
   },
   methods:{
     save(){
-      modifySearchKey(this.allowedWord,this.bannedWord);
+     modifySearchKey(this.allowedWord,this.bannedWord).then(x=>{
+        if(x === 200){
+          this.dialogVisible = false;
+          getSearchKey();
+        }
+     })
     },
     openConfig(){
       this.dialogVisible = true;

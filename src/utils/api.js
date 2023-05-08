@@ -34,9 +34,16 @@ export  const getSearchKey = async () =>{
 
 //修改搜索关键词与违禁词
 export  const  modifySearchKey = async (allowed,banned)=> {
-    console.log(allowed,banned)
+    let url = baseUrl+"/item/setConfig?";
+    if(allowed !== undefined){
+        url +="allowedWord="+encodeURIComponent(allowed)+"&";
+    }
+    if(banned !== undefined && banned.length!==0){
+        url += "&bannedWord="+encodeURIComponent(banned)
+    }
     try{
-        await axios.get(baseUrl+"/item/modifyConfig?allowedWord="+encodeURIComponent(allowed)+"&bannedWord="+encodeURIComponent(banned));
+        await axios.get(url);
+        return 200;
     }catch (e){
         console.log(e)
     }
@@ -46,6 +53,16 @@ export  const  modifySearchKey = async (allowed,banned)=> {
 export const setItemStatus = async (id,status) => {
     try{
         await axios.get(baseUrl+"/item/setStatus?id="+id+"&status="+status);
+    }catch (e){
+        console.log(e)
+    }
+}
+
+//获取商品绘图数据
+export const getChartData = async (day)=>{
+    try{
+        const res = await axios.get(baseUrl + "/Item/basicInform?day=" + day);
+        return res.data;
     }catch (e){
         console.log(e)
     }

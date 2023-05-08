@@ -136,6 +136,11 @@ export default {
             x.pubTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
             this.existData.push(x.id)
             this.tableData.push(x)
+            this.tableData.sort((a, b) => {
+              if (a.pubTime < b.pubTime) return 1;
+              if (a.pubTime > b.pubTime) return -1;
+              return 0;
+            });
             this.loadingStatus = false
           }
         })
