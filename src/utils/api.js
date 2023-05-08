@@ -1,5 +1,5 @@
 import axios from 'axios'
-import {baseUrl,allowedWord,bannedWord} from '@/utils/global'
+import {allowedWord, bannedWord, baseUrl} from '@/utils/global'
 
 //获取商品列表
 export const getData = async (lowPrice,highPrice,isFilterUnknown) => {
@@ -64,6 +64,27 @@ export const getChartData = async (day)=>{
         const res = await axios.get(baseUrl + "/Item/basicInform?day=" + day);
         return res.data;
     }catch (e){
+        console.log(e)
+    }
+}
+
+//上传pdf
+export const uploadPdf = async (formData)=>{
+    try{
+        const res = await axios.post(baseUrl+'/item/upload', formData, {
+            headers: {'Content-Type': 'multipart/form-data'}
+        });
+        return res;
+    }catch (e) {
+        console.log(e);
+    }
+}
+
+//获取pdf文件列表
+export  const  getPdfList = async ()=>{
+    try{
+        return await axios.get(baseUrl + "/item/file");
+    }catch (e) {
         console.log(e)
     }
 }

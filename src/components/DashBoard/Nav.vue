@@ -29,6 +29,13 @@
         </div>
       </router-link>
 
+      <router-link to="/view" style="text-decoration: none;">
+        <div style="display: flex;align-items: center">
+          <el-icon style="font-size: 30px"><DeleteFilled /></el-icon>
+          <el-menu-item index="GoodsFilter">pdf预览</el-menu-item>
+        </div>
+      </router-link>
+
 
     </el-menu>
 

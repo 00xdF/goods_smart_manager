@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Remote PDF Viewer</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Import PDF.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.8.335/pdf.min.js"></script>
+</head>
+<body>
+<!-- Viewer container -->
+<div id="viewer"></div>
+
+<!-- Load the PDF and display it in the viewer -->
+<script>
+    //获取参数
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const pdf_url = urlParams.get('url');
+
+    // PDF.js configuration
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.8.335/pdf.worker.min.js";
+    // Load the PDF and display it in the viewer
+    var loadingTask = pdfjsLib.getDocument(pdf_url);
+    loadingTask.promise.then(function(pdf) {
+    // 循环载入pdf
+    for(var i =1;i<=pdf.numPages;i++){
+        pdf.getPage(i).then(function(page) {
+            // Set scale (zoom) and viewport
+            var scale = 1.5;
+            var viewport = page.getViewport({scale: scale});
+
+            // Prepare canvas using PDF page dimensions
+            var canvas = document.createElement('canvas');
+            var context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            // Render PDF page into canvas context
+            var renderContext = {
+                canvasContext: context,
+                viewport: viewport
+            };
+
+            page.render(renderContext).promise.then(function() {
+                // Add canvas to the viewer container
+                document.querySelector('#viewer').appendChild(canvas);
+            });
+        });
+
+    }
+    });
+</script>
+</body>
+</html>
