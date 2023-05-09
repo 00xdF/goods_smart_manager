@@ -4,7 +4,7 @@
       <el-tag type="danger" style="width: 100%;margin-left: -50px">pdf上传</el-tag>
       <div class="upload">
           <!-- 上传文件只能通过原生input的方式上传-->
-          <input type="file" @change="handleFileUpload" accept="application/pdf"/>
+          <input type="file" @change="handleFileUpload" accept="application/pdf" multiple="multiple"/>
         <hr>
           <el-button type="success" @click="uploadFile" size="small" style="width: 100%;margin-left: -10px;margin-bottom: 10px">上传文件</el-button>
         <el-alert title="上传成功！" type="success" v-if="isUpload" @close="isUpload = false"/>
@@ -32,7 +32,7 @@ export default {
         children: 'children',
         label: 'label',
       },
-      file:null,
+      files:[],
       whenFile:"./web/test.pdf",
       isUpload:false
     }
@@ -40,16 +40,18 @@ export default {
   methods:{
     //上传文件
     async uploadFile() {
-      if (!this.file) {
+      if (this.files.length===0) {
         return
       }
-      const formData = new FormData()
-      formData.append('file', this.file)
-      const res = await uploadPdf(formData);
-      if(res.status === 200){
-        this.isUpload = true;
-      }else{
-        this.isUpload = false;
+      for(let i = 0;i<this.files.length;i++){
+        const formData = new FormData()
+        formData.append('file', this.files[i])
+        const res = await uploadPdf(formData);
+        if(res.status === 200){
+          this.isUpload = true;
+        }else{
+          this.isUpload = false;
+        }
       }
     },
     handleNodeClick(data){
@@ -57,12 +59,15 @@ export default {
         this.data[0].children = [];
         this.getPdfFileList();
       }else{
-        const url = "https://localhost:7081/Item/download/";
+        const url = this.$global.baseURL+"/Item/download/";
         this.whenFile = url+data.label.replace(".pdf","");
       }
     },
     handleFileUpload(event) {
-      this.file = event.target.files[0]
+      let fileIndex = 0;
+      while (fileIndex < event.target.files.length){
+        this.files[fileIndex] = event.target.files[fileIndex++];
+      }
     },
     async getPdfFileList(){
       getPdfList().then(x=>{
